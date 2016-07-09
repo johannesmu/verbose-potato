@@ -1,0 +1,8 @@
+{
+    "navigation" : {
+        "home":{
+            "link":"index.php",
+            "dropdown":"0"
+        }
+    }
+}

@@ -79,6 +79,10 @@
 .product-image{
     width:100%;
     margin-bottom: 20px;
+    transition:all 0.5s;
+}
+.fade-out{
+    opacity: 0;
 }
 .product-item{
     margin-bottom:20px;

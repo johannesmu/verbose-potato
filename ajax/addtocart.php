@@ -42,9 +42,13 @@ if(count($_POST)>0){
       //check if there are items already in the cart
       if(count($_SESSION["cart"]) > 0){
          //set a boolean so if item is already in the cart, it does not
-         //get a duplicate added
+         //get a duplicate added in the function below (array_push($_SESSION["cart"],...)
+         //because we are updating only an existing item's quantity
          $itemisnew = true;
-         //iterate through each item in the cart
+         /*------------
+         iterate through each item in the cart so we can find the one that is the same as
+         the one the user just clicked on, so we can update its quantity
+         -------------*/
          //count number of items in the cart
          $length = count($_SESSION["cart"]);
          //loop through all items in the cart
@@ -58,7 +62,7 @@ if(count($_POST)>0){
                //set itemisnew to false so that it gets updated instead of inserted
                //into the database
                $itemisnew = false;
-               if(updateItemQuantityInDB($dbconnection,$userid,$productid,$newquantity)){
+               if(updateCartItemQuantityInDB($dbconnection,$userid,$productid,$newquantity)){
                   //return success
                   $data["success"] = true;
                   //return cart quantity
@@ -83,7 +87,7 @@ if(count($_POST)>0){
             array_push($_SESSION["cart"],$itemtoadd);
          }
          //insert the item in the database
-         if(addItemIntoDB($dbconnection,$userid,$productid,$quantity)){
+         if(addCartItemToDB($dbconnection,$userid,$productid,$quantity)){
             //if the query succeeds
             $data["success"]=true;
             //return the number of items in the cart
@@ -104,7 +108,7 @@ if(count($_POST)>0){
       //----------if cart is currently EMPTY
       else{
          array_push($_SESSION["cart"],$itemtoadd);
-         if(addItemIntoDB($dbconnection,$userid,$productid,$quantity)){
+         if(addCartItemToDB($dbconnection,$userid,$productid,$quantity)){
             $data["success"]=true;
             $data["quantity"]=countCartItemsInDB($dbconnection,$userid);
          }
@@ -136,7 +140,7 @@ function returnJSONData($arraydata,$arrayerrors){
    exit();
 }
 
-function updateItemQuantityInDB($connection,$userid,$productid,$quantity){
+function updateCartItemQuantityInDB($connection,$userid,$productid,$quantity){
    //create date for dateupdated column in database
    $now = generateDateTime();
    //set query to update only quantity to new one
@@ -151,7 +155,7 @@ function updateItemQuantityInDB($connection,$userid,$productid,$quantity){
       return false;
    }
 }
-function addItemIntoDB($connection,$userid,$productid,$quantity){
+function addCartItemToDB($connection,$userid,$productid,$quantity){
    $now = generateDateTime();
    $query = "INSERT INTO shoppingcart (userid,productid,checkedout,datecreated) 
    VALUES('$userid','$productid','false','$now')";

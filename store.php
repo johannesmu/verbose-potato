@@ -59,6 +59,7 @@ include("includes/head.php");
                 </form>
             </div>
             <div class="col-md-10 store-products">
+                <!--store products will be rendered here-->
             </div>
         </div>
         <div class="row">

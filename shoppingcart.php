@@ -15,7 +15,7 @@ include("includes/head.php");
                 </p>
             </div>
         </div>
-        <div class="row shoppingcart-view">
+        <div class="row shoppingcart-view" id="shopping-cart-list">
 
         </div>
    </div>

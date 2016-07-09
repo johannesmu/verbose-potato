@@ -1,4 +1,5 @@
 /*site wide javascript*/
+
 // UI Elements
 //alert for forms
 var formalert = '<div class="alert alert-dismissible">'+
@@ -14,6 +15,36 @@ var defaultimage = "default.png";
 
 //submit variable to stop double clicking
 var submitting = false;
+//function to submit and receive ajax data.
+//this function will pass returned data to the callback function
+//and pass ajax errors to the error handler
+function sendAjaxRequest(destination_url,json_data,callback_handler,error_handler){
+   $.ajax({
+      type        : 'POST',
+      url         : destination_url,
+      data        : json_data,
+      dataType    : 'json',
+      encode      : true
+   })
+   .done(function(result){
+      callback_handler(result);
+   })
+   .fail(function(error){
+      error_handler(error);
+   });
+}
+//we delegate listener to the store container because all store items are dynamically
+//generated via javascript ajax request
+function addBuyListener(elm){
+   $("")
+}
+function logIt(data){
+   console.log(data);
+}
+function handleAjaxError(error){
+   console.log(error);
+}
+
 
 //all listeners for when document is ready
 $(document).ready(function(){
@@ -116,19 +147,9 @@ $(document).ready(function(){
    });
    //if an element with class 'store-products' exist
    if($(".store-products").length){
-      loadProducts();
+      loadProducts("store-products");
    }
    
-   //----shopping cart section-------
-   
-   //add a listener to buy button -- see the addBuyListener function below
-   addBuyListener();
-   
-      /*
-   get the shopping cart element to update when data comes back from the server
-   a[href='shoppingcart.php'] means find an a element with attribute of href='shoppingcart.php'
-   then we add class "quantity" to it to make it easier to update later
-   */
    addCartClass();
    
    /*
@@ -149,7 +170,8 @@ $(document).ready(function(){
 
 //functions
 //----Shopping Cart section------------
-function addBuyListener(){
+
+function addBuyListener2(){
    $(".buy-btn[data-id]").on("click",function(event){
       var target = event.target;
       event.preventDefault();
@@ -195,7 +217,7 @@ function addCartClass(){
 }
 function displayCartQuantity(cartclass){
    //make an ajax request for modes, see ajax/get-cartdata.php
-   requestdata = {
+   var requestdata = {
       "mode" : "quantity",
       "token" : token
    }
@@ -224,7 +246,7 @@ function displayCartContents(displaycartclass){
       "mode" : "items",
       "token" : token
    }
-   console.log(requestdata);
+   //console.log(requestdata);
    $.ajax({
       type        : 'POST',
       url         : 'ajax/get-cartdata.php',
@@ -234,7 +256,7 @@ function displayCartContents(displaycartclass){
    })
    .done(function(data){
       if(data.success){
-         console.log(data);
+         //console.log(data);
          itemstotal = data.products.length;
          if(itemstotal){
             for(i=0;i<itemstotal;i++){
@@ -249,7 +271,10 @@ function displayCartContents(displaycartclass){
       }
    });
 }
-
+function shoppingCartEvent(){
+   var elm = document.getElementById("shopping-cart-list");
+   var event = new Event('created');
+}
 function renderCartItems(elm,item){
    //directory for product images, the slash has to be escaped with "\"
    imagedir="products\/";
@@ -261,7 +286,7 @@ function renderCartItems(elm,item){
    '<div class="col-xs-12">'+
       '<div class="row">'+
          '<div class="col-sm-3">'+
-            '<img class="product-image" src="'+imagedir+defaultimage+'" data-image="'+imagedir+item.image+'">'+
+            '<img class="product-image" src="'+imagedir+defaultimage+'" data-image="'+imagedir+item.image+'" onload="swapImage(event)">'+
          '</div>'+
          '<div class="col-sm-3">'+
             '<h3>'+item.name+'</h3>'+
@@ -272,6 +297,15 @@ function renderCartItems(elm,item){
       '</div>'
    '</div>';
    $("."+elm).append(cartitem);
+}
+function swapImage(event){
+   var elm = event.target;
+   elm.addEventListener("transitionend",function(){
+      var image = $(elm).attr("src");
+      $(elm).data("image",image);
+      console.log("called");
+   });
+   $(elm).addClass("fade-out");
 }
 //define spinner
 var spinner = '<i class="fa fa-spinner fa-spin spinner"></i>';
@@ -470,4 +504,5 @@ function renderProduct(elm,product){
       $("#"+product.productid+" .normal-price").addClass("cross");
    }
 }
+
 

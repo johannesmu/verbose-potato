@@ -12,7 +12,7 @@ include("includes/head.php");
             <div class="col-md-8">
                 <?php
                 if($_POST["search"]){
-                    $keywords = $_POST["search"];
+                    $keywords = filter_var($_POST["search"],FILTER_SANITIZE_STRING);
                     echo "<p>You searched for <strong>$keywords</strong></p>";
                 }
                 ?>
