@@ -34,9 +34,37 @@ function sendAjaxRequest(destination_url,json_data,callback_handler,error_handle
    });
 }
 //we delegate listener to the store container because all store items are dynamically
-//generated via javascript ajax request
+//generated via javascript ajax request, this means that as products get updated or filtered
+//we do not have to re-add the click listeners
 function addBuyListener(elm){
-   $("")
+   $(elm).on("click",function(event){
+      var target = event.target;
+      /*
+      we have to check if the click target is a button as sometimes it returns
+      the icon or other elements inside the button
+      if it is not a button traverse up using parents() to find the button then 
+      the data-id value
+      */
+      if(target.tagName != "BUTTON"){
+         var targetelement = $(target).parents("button");
+         var id = $(targetelement).data("id");
+         var action = $(targetelement).data("action");
+         var quantity = $(targetelement).siblings("input").val();
+      }
+      //if the click target is a button get the value of data id (this is the product id)
+      else{
+         var id = $(target).data("id");
+         var action = $(target).data("action");
+         var quantity = $(target).siblings("input").val();
+      }
+      //filter out undefined if the click is not to do with buttons
+      if(id != undefined && quantity != undefined && action){
+         var cart_data = {"id":id,"action":action,"quantity":quantity,"token":token};
+         console.log(cart_data);
+         //send the data to the server via ajax
+         sendAjaxRequest("ajax/addtocart.php",cart_data,updateCartCount,cartErrorHandler);
+      }
+   })
 }
 function logIt(data){
    console.log(data);
@@ -44,10 +72,18 @@ function logIt(data){
 function handleAjaxError(error){
    console.log(error);
 }
-
+function cartErrorHandler(error){
+   
+}
+function updateCartCount(data){
+   if(data.success){
+      
+   }
+}
 
 //all listeners for when document is ready
 $(document).ready(function(){
+   addBuyListener(".store-products");
    //------------------------------------user registration form
    //when the register button is clicked
    $("#user-registration").on("submit",function(event){
@@ -417,7 +453,7 @@ function getStoreViewFilterData(){
    return formdata;
 }
 //this function gets called to load products into the store.php page.
-function loadProducts(){
+function loadProducts(elm){
    var ProductData = getStoreViewFilterData();
    $.ajax({
       type        : 'POST',
@@ -433,7 +469,7 @@ function loadProducts(){
          for(i=0;i<lg;i++){
             renderProduct("store-products",data.products[i]);
          }
-         addBuyListener();
+         //addBuyListener();
       }
       else{
          $(".store-products").html("");
@@ -459,7 +495,7 @@ function filterProducts(evt){
          for(i=0;i<lg;i++){
             renderProduct("store-products",data.products[i],i);
          }
-         addBuyListener();
+         //addBuyListener();
       }
       else{
          $(".store-products").empty();
@@ -482,13 +518,13 @@ function renderProduct(elm,product){
    '<div class="price-bar"><span class="dollar price normal-price">'+
    product.productprice+'</span></div>'+
    '<div class="product-button-bar">'+
-   '<form class="form-inline">'+
-   '<button class="btn btn-default buy-btn" data-id="'+product.productid
-   +'"><i class="fa fa-shopping-bag"></i><span class="hidden-sm">Buy It</span></button>'+
+   //'<form class="form-inline">'+
+   '<button class="btn btn-default buy-btn" data-id="'+product.productid+'" data-action="buy">'
+   +'<i class="fa fa-shopping-bag"></i><span class="hidden-sm">Buy It</span></button>'+
    '<input class="form-control qty" type="number" value="1" min="1">'+
-   '<button class="btn btn-default wish-btn" data-id="'+product.productid
-   +'"><i class="fa fa-heart"></i><span class="hidden-sm">Fave It</span></button>'+
-   '</form>'+
+   '<button class="btn btn-default wish-btn" data-id="'+product.productid+'" data-action="wish">'+
+   '<i class="fa fa-heart"></i><span class="hidden-sm">Fave It</span></button>'+
+   //'</form>'+
    '</div></div>';
    //add the product to store container in store.php
    $("."+elm).append(productelm);
